@@ -10,17 +10,18 @@ install.packages("TTR")
 install.packages("quantmod")
 install.packages("DiagrammeR")
 
-library(DiagrammeR)
+library(lubridate)
+library(ggplot2)
 library(lattice)
+library(tidyr)
+library(dplyr)
 library(TTR)
 library(quantmod)
+library(caret)
 library(xgboost)
 library(tidyquant)
-library(dplyr)
-library(tidyr)
-library(lubridate)
-library(caret)
-library(ggplot2)
+library(DiagrammeR)
+
 
 symbol <- "GOOGL"
 start_date <- "2013-01-01"
@@ -65,8 +66,8 @@ y_test <- test_data$returns
 
 params <- list("objective" = "reg:linear",
                "eval_metric" = "rmse",
-               "eta" = 0.1,
-               "max_depth" = 6,
+               "eta" = 0.3,
+               "max_depth" = 5,
                "min_child_weight" = 1,
                "subsample" = 0.8,
                "colsample_bytree" = 0.8)
@@ -76,14 +77,13 @@ xgb_test <- xgb.DMatrix(data = x_test, label = y_test)
 
 xgb_model <- xgb.train(params = params,
                        data = xgb_train,
-                       nrounds = 100,
+                       nrounds = 70,
                        watchlist = list(train = xgb_train, test = xgb_test),
                        early_stopping_rounds = 10,
                        print_every_n = 10)
 
 y_pred <- predict(xgb_model, xgb_test)
 
-# RMSE (error cuadrático medio)
 rmse <- sqrt(mean((y_test - y_pred)^2))
 cat("RMSE:", rmse, "\n")
 
