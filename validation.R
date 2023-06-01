@@ -54,9 +54,10 @@ test_data <- data[(split_index + 1):nrow(data), ]
 
 train_control <- trainControl(method = "cv", number = 5)
 
-grid <- expand.grid(max_depth = c(4, 5,7),
-                    eta = c(0.01,0.03, 0.04, 0.05, 0.06, 0.07),
-                    nrounds = c(100, 150, 200),
+grid <- expand.grid(max_depth = c(4, 5,6),
+                    eta = c( 0.04, 0.05, 0.06),
+                    nrounds = c(100, 120, 150),
+
                     gamma = 1,
                     #gamma = c(0, 1),
                     min_child_weight = 0.1,
@@ -77,13 +78,15 @@ xgb_model_cv <- train(close ~ ma_5 + ma_30 + vol_5 + vol_30 + rsi + adx + trend,
 print(xgb_model_cv)
 y_pred <- predict(xgb_model_cv, newdata = test_data)
 
-# Calcular el RMSE
 rmse <- sqrt(mean((test_data$close - y_pred)^2))
 cat("RMSE:", rmse, "\n")
 
 predictions <- data.frame(Date = test_data$date,
-                          Actual = y_test,
+                          Actual = test_data$close,
                           Predicted = y_pred)
+
+xgb.plot.tree(feature_names = xgb_model_cv$finalModel$feature_names, model = xgb_model, trees = 125)
+
 
 ggplot(predictions, aes(x = Date)) +
   geom_line(aes(y = Actual, color = "Actual")) +
@@ -93,5 +96,3 @@ ggplot(predictions, aes(x = Date)) +
        y = "Retornos",
        color = "Leyenda") +
   theme_minimal()
-
-
